@@ -13,7 +13,7 @@ export type Transaction = {
   fund: FundName;
   description: string;
   amount: number;
-  timestamp: number;
+  date: string;
 };
 
 export type BudgetFile = {
