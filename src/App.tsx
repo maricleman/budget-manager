@@ -35,15 +35,10 @@ export default function App() {
   return (
     <div style={{ maxWidth: 700, margin: "40px auto", fontFamily: "sans-serif" }}>
       <h1>Maricle Family Budget</h1>
-
       <Funds funds={funds} />
-
       <hr />
-
       <TransactionForm onAdd={addTransaction} />
-
       <hr />
-
       <TransactionList transactions={transactions} />
     </div>
   );
