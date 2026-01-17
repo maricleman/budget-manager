@@ -1,62 +1,70 @@
-export const config = {
-  runtime: "nodejs"
-};
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { person, fund, description, amount } = await req.json();
+  try {
+    const token = process.env.GITHUB_TOKEN;
+    const repo = "maricleman/budget-manager-data";
+    const path = "budget.json";
 
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_PATH } = process.env;
+    const body = req.body;
 
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+    // 1. Load current file
+    const ghRes = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
 
-  // 1. Load file
-  const ghRes = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json"
+    const data = await ghRes.json();
+
+    const decoded = Buffer.from(data.content, "base64").toString("utf-8");
+    const json = JSON.parse(decoded);
+
+    // 2. Apply transaction
+    json.transactions.unshift({
+      ...body,
+      date: new Date().toISOString(),
+    });
+
+    json.funds[body.fund] += body.amount;
+
+    // 3. Save back to GitHub
+    const updatedContent = Buffer.from(
+      JSON.stringify(json, null, 2)
+    ).toString("base64");
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: "Update budget",
+          content: updatedContent,
+          sha: data.sha,
+        }),
+      }
+    );
+
+    if (!putRes.ok) {
+      const t = await putRes.text();
+      return res.status(500).json({ error: t });
     }
-  });
 
-  const file = await ghRes.json();
-  const json = JSON.parse(Buffer.from(file.content, "base64").toString());
-
-  // 2. Apply transaction
-  const tx = {
-    id: crypto.randomUUID(),
-    person,
-    fund,
-    description,
-    amount,
-    timestamp: Date.now()
-  };
-
-  json.transactions.unshift(tx);
-  json.funds[fund] = Number((json.funds[fund] + amount).toFixed(2));
-
-  // 3. Save back
-  const newContent = Buffer.from(JSON.stringify(json, null, 2)).toString("base64");
-
-  const putRes = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: `Add transaction: ${description || amount}`,
-      content: newContent,
-      sha: file.sha
-    })
-  });
-
-  if (!putRes.ok) {
-    return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500 });
+    res.status(200).json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Unknown error" });
   }
-
-  return Response.json({ ok: true });
 }

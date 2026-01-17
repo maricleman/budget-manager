@@ -1,25 +1,33 @@
-export const config = {
-  runtime: "nodejs"
-};
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-export default async function handler() {
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_PATH } = process.env;
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    const token = process.env.GITHUB_TOKEN;
+    const repo = "maricleman/budget-manager-data";
+    const path = "budget.json";
 
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+    const ghRes = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
 
-  const ghRes = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json"
+    if (!ghRes.ok) {
+      const text = await ghRes.text();
+      return res.status(500).json({ error: text });
     }
-  });
 
-  if (!ghRes.ok) {
-    return new Response(JSON.stringify({ error: "GitHub fetch failed" }), { status: 500 });
+    const data = await ghRes.json();
+
+    const content = Buffer.from(data.content, "base64").toString("utf-8");
+    const json = JSON.parse(content);
+
+    res.status(200).json(json);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Unknown error" });
   }
-
-  const data = await ghRes.json();
-  const content = JSON.parse(Buffer.from(data.content, "base64").toString());
-
-  return Response.json(content);
 }
