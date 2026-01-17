@@ -1,20 +1,19 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+export const config = {
+  runtime: "nodejs"
+};
 
-const {
-  GITHUB_TOKEN,
-  GITHUB_OWNER,
-  GITHUB_REPO,
-  GITHUB_PATH
-} = process.env;
+export default async function handler(req: Request) {
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") return res.status(405).end();
+  const { person, fund, description, amount } = await req.json();
 
-  const { person, fund, description, amount } = req.body;
+  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_PATH } = process.env;
 
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 
-  // 1. Get file
+  // 1. Load file
   const ghRes = await fetch(url, {
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -38,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   json.transactions.unshift(tx);
   json.funds[fund] = Number((json.funds[fund] + amount).toFixed(2));
 
-  // 3. Save back to GitHub
+  // 3. Save back
   const newContent = Buffer.from(JSON.stringify(json, null, 2)).toString("base64");
 
   const putRes = await fetch(url, {
@@ -56,8 +55,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   if (!putRes.ok) {
-    return res.status(500).json({ error: "Failed to save" });
+    return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500 });
   }
 
-  res.status(200).json({ ok: true });
+  return Response.json({ ok: true });
 }
