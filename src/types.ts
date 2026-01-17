@@ -15,3 +15,8 @@ export type Transaction = {
   amount: number;
   timestamp: number;
 };
+
+export type BudgetFile = {
+  funds: Funds;
+  transactions: Transaction[];
+};

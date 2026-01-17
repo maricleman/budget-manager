@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Funds } from "./Funds";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionList } from "./TransactionList";
@@ -14,23 +14,31 @@ const initialFunds: FundsType = {
 };
 
 export default function App() {
-  const [funds, setFunds] = useState<FundsType>(initialFunds);
+  const [funds, setFunds] = useState<FundsType | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  function addTransaction(tx: Omit<Transaction, "id" | "timestamp">) {
-    const newTx: Transaction = {
-      ...tx,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-    };
+async function addTransaction(tx: Omit<Transaction, "id" | "timestamp">) {
+  await fetch("/api/transaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(tx)
+  });
 
-    setTransactions((prev) => [newTx, ...prev]);
+  const data = await fetch("/api/budget").then((r) => r.json());
+  setFunds(data.funds);
+  setTransactions(data.transactions);
+}
 
-    setFunds((prev) => ({
-      ...prev,
-      [tx.fund]: parseFloat((prev[tx.fund] + tx.amount).toFixed(2)),
-    }));
-  }
+  useEffect(() => {
+  fetch("/api/budget")
+    .then((r) => r.json())
+    .then((data) => {
+      setFunds(data.funds);
+      setTransactions(data.transactions);
+    });
+}, []);
+
+if (!funds) return <div>Loading...</div>;
 
   return (
     <div style={{ maxWidth: 700, margin: "40px auto", fontFamily: "sans-serif" }}>
