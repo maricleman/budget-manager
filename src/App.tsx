@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { Funds } from "./Funds";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionList } from "./TransactionList";
-import type { Funds as FundsType, Transaction } from "./types";
+import type { Funds as FundsType, Transaction, NewTransaction } from "./types";
 
 
 export default function App() {
   const [funds, setFunds] = useState<FundsType | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-async function addTransaction(tx: Omit<Transaction, "id" | "timestamp">) {
+async function addTransaction(tx: Omit<NewTransaction, "id" | "date">) {
   await fetch("/api/transaction", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

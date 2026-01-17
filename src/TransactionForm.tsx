@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { FundName, Transaction } from "./types";
+import type { FundName, Transaction, NewTransaction } from "./types";
 
 type Props = {
-  onAdd(tx: Omit<Transaction, "id" | "timestamp">): void;
+  onAdd(tx: Omit<Transaction, "id" | "date">): void;
 };
 
 export function TransactionForm({ onAdd }: Props) {
@@ -20,12 +20,14 @@ export function TransactionForm({ onAdd }: Props) {
       return;
     }
 
-    onAdd({
-      person,
-      fund,
-      description,
-      amount: value,
-    });
+  const tx: NewTransaction = {
+    person: person,
+    fund: fund,
+    description: description,
+    amount: Number(amount),
+  };
+
+    onAdd(tx);
 
     setDescription("");
     setAmount("");

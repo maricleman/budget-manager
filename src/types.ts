@@ -20,3 +20,5 @@ export type BudgetFile = {
   funds: Funds;
   transactions: Transaction[];
 };
+
+export type NewTransaction = Omit<Transaction, "id" | "date">;
