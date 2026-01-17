@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { FundName, Transaction } from "./types";
 
-
 type Props = {
   onAdd(tx: Omit<Transaction, "id" | "timestamp">): void;
 };

@@ -1,6 +1,5 @@
 import type { Transaction } from "./types";
 
-
 type Props = {
   transactions: Transaction[];
 };
