@@ -5,14 +5,6 @@ import { TransactionList } from "./TransactionList";
 import type { Funds as FundsType, Transaction } from "./types";
 
 
-const initialFunds: FundsType = {
-  restaurant: 500,
-  grocery: 600,
-  adventure: 300,
-  david: 200,
-  hannah: 200,
-};
-
 export default function App() {
   const [funds, setFunds] = useState<FundsType | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
