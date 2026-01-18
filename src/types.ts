@@ -2,6 +2,7 @@ export type FundName =
   | "restaurant"
   | "grocery"
   | "adventure"
+  | "gift"
   | "david"
   | "hannah";
 
