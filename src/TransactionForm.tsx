@@ -64,6 +64,7 @@ export function TransactionForm({ onAdd }: Props) {
             <option value="restaurant">Restaurant</option>
             <option value="grocery">Grocery</option>
             <option value="adventure">Adventure</option>
+            <option value="gift">Gift</option>
             <option value="david">David</option>
             <option value="hannah">Hannah</option>
           </select>
