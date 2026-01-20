@@ -47,6 +47,14 @@ export default function App() {
 
       <hr />
 
+
+      <TransactionForm onAdd={addTransaction} />
+
+      <hr />
+
+      <TransactionList transactions={transactions} />
+
+      <hr />
       <BudgetEditor
         budgets={thisMonthBudgets}
         onSave={async (newBudgets) => {
@@ -62,14 +70,6 @@ export default function App() {
           await loadData();
         }}
       />
-
-      <hr />
-
-      <TransactionForm onAdd={addTransaction} />
-
-      <hr />
-
-      <TransactionList transactions={transactions} />
     </div>
   );
 }
