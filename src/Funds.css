@@ -10,7 +10,7 @@
 
 .fund-row {
   display: grid;
-  grid-template-columns: 140px 1fr 100px;
+  grid-template-columns: 140px 1fr 110px;
   align-items: center;
   gap: 12px;
 }
@@ -20,8 +20,8 @@
 }
 
 .fund-bar-container {
-  height: 14px;
-  background: #eee;
+  height: 16px;
+  background: #f3f4f6;
   border-radius: 8px;
   overflow: hidden;
 }

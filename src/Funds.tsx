@@ -25,7 +25,8 @@ export function Funds({ funds }: Props) {
       <div className="funds-list">
         {FUND_META.map(({ key, label, icon }) => {
           const value = funds[key];
-          const pct = Math.min(Math.abs(value) / maxAbs, 1) * 50; // 50% max per side
+          const pct = Math.min(Math.abs(value) / maxAbs, 1) * 100;
+          const isPositive = value >= 0;
 
           return (
             <div key={key} className="fund-row">
@@ -33,34 +34,16 @@ export function Funds({ funds }: Props) {
                 {icon} {label}
               </div>
 
-              <div className="fund-bar-container center-zero">
-                {/* Negative side */}
-                <div className="bar-half left">
-                  {value < 0 && (
-                    <div
-                      className="fund-bar negative"
-                      style={{ width: `${pct}%` }}
-                    />
-                  )}
-                </div>
-
-                {/* Zero line */}
-                <div className="zero-line" />
-
-                {/* Positive side */}
-                <div className="bar-half right">
-                  {value > 0 && (
-                    <div
-                      className="fund-bar positive"
-                      style={{ width: `${pct}%` }}
-                    />
-                  )}
-                </div>
+              <div className="fund-bar-container">
+                <div
+                  className={`fund-bar ${isPositive ? "positive" : "negative"}`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
 
               <div
                 className={`fund-amount ${
-                  value >= 0 ? "positive" : "negative"
+                  isPositive ? "positive" : "negative"
                 }`}
               >
                 ${value.toFixed(2)}
