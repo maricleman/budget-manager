@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { FundName } from "./types";
-import { currentYearMonth } from "./date";
 
 const FUNDS: { key: FundName; label: string }[] = [
   { key: "restaurant", label: "Restaurant" },
@@ -17,29 +16,25 @@ type Props = {
 };
 
 export function BudgetEditor({ budgets, onSave }: Props) {
-  const [local, setLocal] = useState<Record<FundName, number> | null>(null);
+  const [local, setLocal] = useState<Record<FundName, number>>({
+    restaurant: 0,
+    grocery: 0,
+    adventure: 0,
+    gift: 0,
+    david: 0,
+    hannah: 0,
+  });
+
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (budgets) {
       setLocal({ ...budgets });
-    } else {
-      // default empty month
-      setLocal({
-        restaurant: 0,
-        grocery: 0,
-        adventure: 0,
-        gift: 0,
-        david: 0,
-        hannah: 0,
-      });
     }
   }, [budgets]);
 
-  if (!local) return null;
-
   function setFund(fund: FundName, value: number) {
-    setLocal((prev) => ({ ...prev!, [fund]: value }));
+    setLocal((prev) => ({ ...prev, [fund]: value }));
   }
 
   async function save() {
@@ -54,15 +49,14 @@ export function BudgetEditor({ budgets, onSave }: Props) {
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 120px", gap: 12 }}>
         {FUNDS.map((f) => (
-          <>
-            <label key={f.key + "-label"}>{f.label}</label>
+          <div key={f.key} style={{ display: "contents" }}>
+            <label>{f.label}</label>
             <input
-              key={f.key}
               type="number"
               value={local[f.key]}
               onChange={(e) => setFund(f.key, Number(e.target.value))}
             />
-          </>
+          </div>
         ))}
       </div>
 

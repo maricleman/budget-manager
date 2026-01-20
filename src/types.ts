@@ -27,5 +27,3 @@ export type NewTransaction = Omit<Transaction, "id" | "date">;
 export type MonthlyBudgets = {
   [yearMonth: string]: Record<FundName, number>;
 };
-
-export type MonthlyBudgets = Record<string, Funds>;
