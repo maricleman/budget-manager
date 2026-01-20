@@ -1,0 +1,55 @@
+.funds {
+  margin-bottom: 24px;
+}
+
+.funds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fund-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 100px;
+  align-items: center;
+  gap: 12px;
+}
+
+.fund-label {
+  font-weight: 500;
+}
+
+.fund-bar-container {
+  height: 14px;
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fund-bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.3s ease;
+}
+
+.fund-bar.positive {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+}
+
+.fund-bar.negative {
+  background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+.fund-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.fund-amount.positive {
+  color: #166534;
+}
+
+.fund-amount.negative {
+  color: #7f1d1d;
+}
