@@ -16,32 +16,48 @@ type Props = {
 };
 
 export function BudgetEditor({ budgets, onSave }: Props) {
-  const [local, setLocal] = useState<Record<FundName, number>>({
-    restaurant: 0,
-    grocery: 0,
-    adventure: 0,
-    gift: 0,
-    david: 0,
-    hannah: 0,
+  const [local, setLocal] = useState<Record<FundName, string>>({
+    restaurant: "",
+    grocery: "",
+    adventure: "",
+    gift: "",
+    david: "",
+    hannah: ""
   });
 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (budgets) {
-      setLocal({ ...budgets });
+  if (budgets) {
+    const asStrings = Object.fromEntries(
+      Object.entries(budgets).map(([k, v]) => [k, String(v)])
+    ) as Record<FundName, string>;
+
+      setLocal(asStrings);
     }
   }, [budgets]);
 
-  function setFund(fund: FundName, value: number) {
+
+  function setFund(fund: FundName, value: string) {
     setLocal((prev) => ({ ...prev, [fund]: value }));
   }
 
   async function save() {
-    setSaving(true);
-    await onSave(local);
-    setSaving(false);
-  }
+  setSaving(true);
+
+  const numeric: Record<FundName, number> = {
+    restaurant: Number(local.restaurant) || 0,
+    grocery: Number(local.grocery) || 0,
+    adventure: Number(local.adventure) || 0,
+    gift: Number(local.gift) || 0,
+    david: Number(local.david) || 0,
+    hannah: Number(local.hannah) || 0,
+  };
+
+  await onSave(numeric);
+  setSaving(false);
+}
+
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -54,7 +70,7 @@ export function BudgetEditor({ budgets, onSave }: Props) {
             <input
               type="number"
               value={local[f.key]}
-              onChange={(e) => setFund(f.key, Number(e.target.value))}
+              onChange={(e) => setFund(f.key, e.target.value)}
             />
           </div>
         ))}
