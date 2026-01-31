@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FundName, Transaction, NewTransaction } from "./types";
+import { FUNDS } from "./funds";
 
 type Props = {
   onAdd(tx: Omit<Transaction, "id" | "date">): void;
@@ -58,18 +59,21 @@ export function TransactionForm({ onAdd }: Props) {
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <label>
-          Fund:{" "}
-          <select value={fund} onChange={(e) => setFund(e.target.value as FundName)}>
-            <option value="restaurant">Restaurant</option>
-            <option value="grocery">Grocery</option>
-            <option value="adventure">Adventure</option>
-            <option value="gift">Gift</option>
-            <option value="david">David</option>
-            <option value="hannah">Hannah</option>
-          </select>
-        </label>
-      </div>
+      <label>
+        Fund:{" "}
+        <select
+          value={fund}
+          onChange={(e) => setFund(e.target.value as FundName)}
+        >
+          {FUNDS.map((f) => (
+            <option key={f.key} value={f.key}>
+              {f.label}
+            </option>
+        ))}
+        </select>
+      </label>
+</div>
+
 
       <div style={{ marginTop: 10 }}>
         <label>
