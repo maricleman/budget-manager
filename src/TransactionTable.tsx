@@ -45,9 +45,9 @@ export function TransactionTable({ transactions }: Props) {
         <tbody>
           {filtered.map((t) => (
             <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ paddingRight: '20px' }}>{new Date(t.date).toLocaleDateString()}</td>
-              <td style={{ paddingRight: '20px' }}>{capitalize(t.person)}</td>
-              <td style={{ paddingRight: '20px' }}>{capitalize(t.fund)}</td>
+              <td style={{ paddingRight: '5px' }}>{new Date(t.date).toLocaleDateString()}</td>
+              <td style={{ paddingRight: '5px' }}>{capitalize(t.person)}</td>
+              <td style={{ paddingRight: '5px' }}>{capitalize(t.fund)}</td>
               <td>{t.description}</td>
               <td
                 align="right"
