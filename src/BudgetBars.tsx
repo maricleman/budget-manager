@@ -21,8 +21,8 @@ export function BudgetBars({ funds, budgets }: Props) {
       <h2>This Month's Budgets</h2>
 
       {FUNDS.map((f) => {
-        const budget = budgets[f.key];
-        const remaining = funds[f.key];
+        const budget = budgets[f.key] ?? 0;
+        const remaining = funds[f.key] ?? 0;
         const spent = budget - remaining;
 
         const percent =
