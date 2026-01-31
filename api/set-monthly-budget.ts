@@ -55,15 +55,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2. Update monthly budgets
     data.monthlyBudgets ??= {};
 
-    const isNewMonth = !data.monthlyBudgets[yearMonth];
+  const prevBudgets = data.monthlyBudgets[yearMonth] ?? {};
 
-    if (isNewMonth) {
-      for (const [fund, amount] of Object.entries(budgets)) {
-        data.funds[fund] = (data.funds[fund] ?? 0) + amount;
-      }
-    } 
+  for (const [fund, newAmount] of Object.entries(budgets)) {
+    const oldAmount = Number(prevBudgets[fund] ?? 0);
+    const delta = Number(newAmount) - oldAmount;
 
-    data.monthlyBudgets[yearMonth] = budgets;
+    if (!Number.isFinite(delta)) continue;
+
+    data.funds[fund] = (data.funds[fund] ?? 0) + delta;
+  }
+
+  data.monthlyBudgets[yearMonth] = budgets;
+
 
 
     // 3. Save back to GitHub
