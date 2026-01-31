@@ -3,6 +3,8 @@ export type FundName =
   | "grocery"
   | "adventure"
   | "gift"
+  | "homeSupplies"
+  | "clothing"
   | "david"
   | "hannah";
 

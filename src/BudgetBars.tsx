@@ -1,8 +1,9 @@
+import { FUNDS } from "./funds";
 import type { Funds } from "./types";
 
 type Props = {
-  funds: Funds;          // current balances
-  budgets?: Funds;       // this month's budgets
+  funds: Funds;     // current balances
+  budgets?: Funds;  // this month's budgets
 };
 
 export function BudgetBars({ funds, budgets }: Props) {
@@ -15,26 +16,26 @@ export function BudgetBars({ funds, budgets }: Props) {
     );
   }
 
-  const entries = Object.keys(budgets) as (keyof Funds)[];
-
   return (
     <div>
       <h2>This Month's Budgets</h2>
 
-      {entries.map((key) => {
-        const budget = budgets[key];
-        const remaining = funds[key];
+      {FUNDS.map((f) => {
+        const budget = budgets[f.key];
+        const remaining = funds[f.key];
         const spent = budget - remaining;
 
         const percent =
-          budget <= 0 ? 0 : Math.min(100, Math.max(0, (spent / budget) * 100));
+          budget <= 0
+            ? 0
+            : Math.min(100, Math.max(0, (spent / budget) * 100));
 
         const overspent = remaining < 0;
 
         return (
-          <div key={key} style={{ marginBottom: 16 }}>
+          <div key={f.key} style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: "bold", marginBottom: 4 }}>
-              {labelFor(key)}
+              {f.label}
             </div>
 
             <div
@@ -66,11 +67,13 @@ export function BudgetBars({ funds, budgets }: Props) {
                   justifyContent: "center",
                   fontWeight: "bold",
                   color: overspent ? "white" : "black",
-                  textShadow: overspent ? "0 0 4px rgba(0,0,0,0.5)" : "none",
+                  textShadow: overspent
+                    ? "0 0 4px rgba(0,0,0,0.5)"
+                    : "none",
                 }}
               >
                 ${spent.toFixed(0)} / ${budget.toFixed(0)}{" "}
-                {remaining < 0
+                {overspent
                   ? ` (Over by $${Math.abs(remaining).toFixed(0)})`
                   : ` ($${remaining.toFixed(0)} left)`}
               </div>
@@ -80,17 +83,4 @@ export function BudgetBars({ funds, budgets }: Props) {
       })}
     </div>
   );
-}
-
-function labelFor(key: string) {
-  const map: Record<string, string> = {
-    grocery: "🛒 Grocery",
-    restaurant: "🍔 Restaurant",
-    adventure: "🏕️ Adventure",
-    gift: "🎁 Gift",
-    david: "👨 David",
-    hannah: "👩 Hannah",
-  };
-
-  return map[key] ?? key;
 }

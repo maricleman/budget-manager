@@ -22,7 +22,9 @@ export function BudgetEditor({ budgets, onSave }: Props) {
     adventure: "",
     gift: "",
     david: "",
-    hannah: ""
+    hannah: "",
+    homeSupplies: "",
+    clothing: "",
   });
 
   const [saving, setSaving] = useState(false);
@@ -52,6 +54,8 @@ export function BudgetEditor({ budgets, onSave }: Props) {
     gift: Number(local.gift) || 0,
     david: Number(local.david) || 0,
     hannah: Number(local.hannah) || 0,
+    homeSupplies: Number(local.homeSupplies) || 0,
+    clothing: Number(local.clothing) || 0,
   };
 
   await onSave(numeric);

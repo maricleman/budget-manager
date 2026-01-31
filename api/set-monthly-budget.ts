@@ -20,7 +20,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { yearMonth, budgets } = req.body;
+    type MonthlyBudgets = Record<string, number>;
+    const { yearMonth, budgets } = req.body as {
+      yearMonth: string;
+      budgets: MonthlyBudgets;
+    };
 
     if (!yearMonth || !budgets) {
       res.status(400).json({ error: "Missing yearMonth or budgets" });
@@ -50,7 +54,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 2. Update monthly budgets
     data.monthlyBudgets ??= {};
+
+    const isNewMonth = !data.monthlyBudgets[yearMonth];
+
+    if (isNewMonth) {
+      for (const [fund, amount] of Object.entries(budgets)) {
+        data.funds[fund] = (data.funds[fund] ?? 0) + amount;
+      }
+    } 
+
     data.monthlyBudgets[yearMonth] = budgets;
+
 
     // 3. Save back to GitHub
     const newContent = Buffer.from(
