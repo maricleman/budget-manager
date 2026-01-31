@@ -35,7 +35,7 @@ export function BudgetBars({ funds, budgets }: Props) {
         return (
           <div key={f.key} style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: "bold", marginBottom: 4 }}>
-              {f.label}
+              {`${f.label} ${f.emoji}`}
             </div>
 
             <div

@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FundName } from "./types";
+import { FUNDS } from "./funds";
 
-const FUNDS: { key: FundName; label: string }[] = [
-  { key: "restaurant", label: "Restaurant" },
-  { key: "grocery", label: "Grocery" },
-  { key: "adventure", label: "Adventure" },
-  { key: "gift", label: "Gift" },
-  { key: "david", label: "David" },
-  { key: "hannah", label: "Hannah" },
-];
 
 type Props = {
   budgets: Record<FundName, number> | undefined;
