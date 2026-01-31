@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TransactionForm } from "./TransactionForm";
-import { TransactionList } from "./TransactionList";
+import { TransactionTable } from "./TransactionTable";
 import type { Funds as FundsType, Transaction, NewTransaction, MonthlyBudgets } from "./types";
 import { BudgetEditor } from "./BudgetEditor";
 import { currentYearMonth } from "./utils";
@@ -52,7 +52,7 @@ export default function App() {
 
       <hr />
 
-      <TransactionList transactions={transactions} />
+      <TransactionTable transactions={transactions} />
 
       <hr />
       <BudgetEditor
