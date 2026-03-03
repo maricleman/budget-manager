@@ -7,6 +7,7 @@ export const FUNDS: { key: FundName; label: string; emoji: string }[] = [
   { key: "gift", label: "Gift", emoji: "🎁" },
   { key: "homeSupplies", label: "Home Supplies", emoji: "🏠" },
   { key: "clothing", label: "Clothing", emoji: "👕" },
+  { key: "health", label: "Health & Fitness", emoji: "🙆🏼‍♂️" },
   { key: "david", label: "David", emoji: "👨" },
   { key: "hannah", label: "Hannah", emoji: "👩" },
 ];

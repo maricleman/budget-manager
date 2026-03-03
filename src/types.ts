@@ -5,6 +5,7 @@ export type FundName =
   | "gift"
   | "homeSupplies"
   | "clothing"
+  | "health"
   | "david"
   | "hannah";
 
