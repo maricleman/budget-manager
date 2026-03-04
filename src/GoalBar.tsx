@@ -6,6 +6,8 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
   const [editAmount, setEditAmount] = useState(String(goal.currentAmount));
   const [isEditingMonthly, setIsEditingMonthly] = useState(false);
   const [editMonthly, setEditMonthly] = useState(String(goal.monthlyContribution));
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState(goal.name);
 
   const percent =
     goal.targetAmount <= 0
@@ -49,10 +51,50 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
     onUpdate?.();
   }
 
+  async function handleSaveName() {
+    const newName = editName.trim();
+    if (newName && newName !== goal.name) {
+      await fetch("/api/update-goal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: goal.id, name: newName }),
+      });
+      onUpdate?.();
+    }
+    setIsEditingName(false);
+  }
+
   return (
     <div style={{ marginBottom: 16 }}>
       <div style={{ fontWeight: "bold", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {goal.name}
+        <div style={{ cursor: "pointer", flex: 1 }} onClick={() => setIsEditingName(true)}>
+          {!isEditingName ? (
+            goal.name
+          ) : (
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSaveName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveName();
+                if (e.key === "Escape") {
+                  setEditName(goal.name);
+                  setIsEditingName(false);
+                }
+              }}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                padding: "4px 8px",
+                fontSize: "inherit",
+                fontWeight: "inherit",
+                border: "2px solid #2563eb",
+                borderRadius: "4px",
+              }}
+            />
+          )}
+        </div>
         {onDelete && (
           <button
             onClick={() => onDelete(goal.id)}
