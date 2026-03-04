@@ -4,6 +4,8 @@ import type { Goal } from "./types";
 export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDelete?: (id: string) => void; onUpdate?: () => void }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editAmount, setEditAmount] = useState(String(goal.currentAmount));
+  const [isEditingMonthly, setIsEditingMonthly] = useState(false);
+  const [editMonthly, setEditMonthly] = useState(String(goal.monthlyContribution));
 
   const percent =
     goal.targetAmount <= 0
@@ -33,6 +35,17 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
       body: JSON.stringify({ id: goal.id, currentAmount: newAmount }),
     });
     setIsEditing(false);
+    onUpdate?.();
+  }
+
+  async function handleSaveMonthly() {
+    const newMonthly = Number(editMonthly);
+    await fetch("/api/update-goal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: goal.id, monthlyContribution: newMonthly }),
+    });
+    setIsEditingMonthly(false);
     onUpdate?.();
   }
 
@@ -118,11 +131,38 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
         </div>
       </div>
 
-      <div style={{ fontSize: 14, marginTop: 4 }}>
-        ${remaining.toFixed(0)} remaining
-        {monthsRemaining !== null && dateString
-          ? ` • ~${monthsRemaining} months / ${dateString}`
-          : ""}
+      <div style={{ fontSize: 14, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          ${remaining.toFixed(0)} remaining
+          {monthsRemaining !== null && dateString
+            ? ` • ~${monthsRemaining} months / ${dateString}`
+            : ""}
+        </div>
+        <div style={{ cursor: "pointer", color: "#666" }} onClick={() => setIsEditingMonthly(true)}>
+          {!isEditingMonthly ? (
+            <span style={{ fontSize: 12 }}>${goal.monthlyContribution.toFixed(0)}/mo</span>
+          ) : (
+            <input
+              type="number"
+              value={editMonthly}
+              onChange={(e) => setEditMonthly(e.target.value)}
+              onBlur={handleSaveMonthly}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveMonthly();
+                if (e.key === "Escape") setIsEditingMonthly(false);
+              }}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "60px",
+                padding: "4px",
+                fontSize: 12,
+                border: "2px solid #2563eb",
+                borderRadius: "4px",
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
