@@ -5,6 +5,7 @@ import type { Funds as FundsType, Transaction, NewTransaction, MonthlyBudgets } 
 import { BudgetEditor } from "./BudgetEditor";
 import { currentYearMonth } from "./utils";
 import { BudgetBars } from "./BudgetBars";
+import { GoalsPage } from "./GoalsPage";
 
 
 export default function App() {
@@ -55,6 +56,9 @@ export default function App() {
       <TransactionTable transactions={transactions} />
 
       <hr />
+
+      <hr />
+      <GoalsPage />
       <BudgetEditor
         budgets={thisMonthBudgets}
         onSave={async (newBudgets) => {

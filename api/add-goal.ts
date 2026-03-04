@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import type { BudgetData } from "../src/types";
+import type { BudgetData, Goal } from "../src/types";
 
 const OWNER = process.env.GITHUB_OWNER!;
 const REPO = process.env.GITHUB_REPO!;
@@ -8,8 +8,6 @@ const TOKEN = process.env.GITHUB_TOKEN!;
 
 const GH_API = "https://api.github.com";
 
-
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     res.status(405).send("Method not allowed");
@@ -17,18 +15,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    type MonthlyBudgets = Record<string, number>;
-    const { yearMonth, budgets } = req.body as {
-      yearMonth: string;
-      budgets: MonthlyBudgets;
+    const { name, targetAmount, monthlyContribution } = req.body as {
+      name?: string;
+      targetAmount?: number;
+      monthlyContribution?: number;
     };
 
-    if (!yearMonth || !budgets) {
-      res.status(400).json({ error: "Missing yearMonth or budgets" });
+    if (!name || targetAmount == null || monthlyContribution == null) {
+      res.status(400).json({ error: "Missing name, targetAmount or monthlyContribution" });
       return;
     }
 
-    // 1. Load existing JSON from GitHub
     const getResp = await fetch(
       `${GH_API}/repos/${OWNER}/${REPO}/contents/${PATH}`,
       {
@@ -45,33 +42,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const file = await getResp.json();
-
     const decoded = Buffer.from(file.content, "base64").toString("utf8");
     const data: BudgetData = JSON.parse(decoded);
 
-    // 2. Update monthly budgets
-    data.monthlyBudgets ??= {};
+    data.goals ??= [];
 
-  const prevBudgets = data.monthlyBudgets[yearMonth] ?? {};
+    const newGoal: Goal = {
+      id: crypto.randomUUID(),
+      name,
+      targetAmount: Number(targetAmount),
+      monthlyContribution: Number(monthlyContribution),
+      currentAmount: 0,
+      createdAt: new Date().toISOString(),
+    };
 
-  for (const [fund, newAmount] of Object.entries(budgets)) {
-    const oldAmount = Number(prevBudgets[fund] ?? 0);
-    const delta = Number(newAmount) - oldAmount;
+    data.goals.unshift(newGoal);
 
-    if (!Number.isFinite(delta)) continue;
-
-    data.funds[fund] = (data.funds[fund] ?? 0) + delta;
-  }
-
-  data.monthlyBudgets[yearMonth] = budgets;
-
-
-
-    // 3. Save back to GitHub
-    const newContent = Buffer.from(
-      JSON.stringify(data, null, 2),
-      "utf8"
-    ).toString("base64");
+    const newContent = Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64");
 
     const putResp = await fetch(
       `${GH_API}/repos/${OWNER}/${REPO}/contents/${PATH}`,
@@ -83,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: `Set monthly budget for ${yearMonth}`,
+          message: `Add goal: ${name}`,
           content: newContent,
           sha: file.sha,
         }),
@@ -95,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error("GitHub PUT failed: " + t);
     }
 
-    res.json({ ok: true });
+    res.status(200).json({ ok: true });
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: err.message ?? "Unknown error" });
