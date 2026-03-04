@@ -15,6 +15,8 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
   const [editMonthly, setEditMonthly] = useState(String(goal.monthlyContribution));
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(goal.name);
+  const [isEditingTarget, setIsEditingTarget] = useState(false);
+  const [editTarget, setEditTarget] = useState(String(goal.targetAmount));
 
   const percent =
     goal.targetAmount <= 0
@@ -69,6 +71,19 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
       onUpdate?.();
     }
     setIsEditingName(false);
+  }
+
+  async function handleSaveTarget() {
+    const newTarget = Number(editTarget);
+    if (newTarget > 0) {
+      await fetch("/api/update-goal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: goal.id, targetAmount: newTarget }),
+      });
+      onUpdate?.();
+    }
+    setIsEditingTarget(false);
   }
 
   return (
@@ -180,14 +195,39 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
         </div>
       </div>
 
-      <div style={{ fontSize: 14, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div style={{ fontSize: 14, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+        <div style={{ flex: 1 }}>
           ${formatCurrency(remaining)} remaining
           {monthsRemaining !== null && dateString
             ? ` • ~${monthsRemaining} months / ${dateString}`
             : ""}
         </div>
-        <div style={{ cursor: "pointer", color: "#666" }} onClick={() => setIsEditingMonthly(true)}>
+        <div style={{ cursor: "pointer", color: "#666", whiteSpace: "nowrap" }} onClick={() => setIsEditingTarget(true)}>
+          {!isEditingTarget ? (
+            <span style={{ fontSize: 12 }}>Target: ${formatCurrency(goal.targetAmount)}</span>
+          ) : (
+            <input
+              type="number"
+              value={editTarget}
+              onChange={(e) => setEditTarget(e.target.value)}
+              onBlur={handleSaveTarget}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveTarget();
+                if (e.key === "Escape") setIsEditingTarget(false);
+              }}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "80px",
+                padding: "4px",
+                fontSize: 12,
+                border: "2px solid #2563eb",
+                borderRadius: "4px",
+              }}
+            />
+          )}
+        </div>
+        <div style={{ cursor: "pointer", color: "#666", whiteSpace: "nowrap" }} onClick={() => setIsEditingMonthly(true)}>
           {!isEditingMonthly ? (
             <span style={{ fontSize: 12 }}>${formatCurrency(goal.monthlyContribution)}/mo</span>
           ) : (
