@@ -57,8 +57,10 @@ export default function App() {
 
       <hr />
 
-      <hr />
       <GoalsPage />
+
+      <hr />
+      
       <BudgetEditor
         budgets={thisMonthBudgets}
         onSave={async (newBudgets) => {
