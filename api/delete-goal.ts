@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import type { BudgetData, Goal } from "../src/types";
+import type { BudgetData } from "../src/types";
 
 const OWNER = process.env.GITHUB_OWNER!;
 const REPO = process.env.GITHUB_REPO!;
@@ -15,15 +15,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { name, targetAmount, monthlyContribution, currentAmount } = req.body as {
-      name?: string;
-      targetAmount?: number;
-      monthlyContribution?: number;
-      currentAmount?: number;
-    };
+    const { id } = req.body as { id?: string };
 
-    if (!name || targetAmount == null || monthlyContribution == null) {
-      res.status(400).json({ error: "Missing name, targetAmount or monthlyContribution" });
+    if (!id) {
+      res.status(400).json({ error: "Missing goal id" });
       return;
     }
 
@@ -47,17 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data: BudgetData = JSON.parse(decoded);
 
     data.goals ??= [];
-
-    const newGoal: Goal = {
-      id: crypto.randomUUID(),
-      name,
-      targetAmount: Number(targetAmount),
-      monthlyContribution: Number(monthlyContribution),
-      currentAmount: Number(currentAmount) || 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    data.goals.unshift(newGoal);
+    data.goals = data.goals.filter((g) => g.id !== id);
 
     const newContent = Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64");
 
@@ -71,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: `Add goal: ${name}`,
+          message: `Delete goal: ${id}`,
           content: newContent,
           sha: file.sha,
         }),

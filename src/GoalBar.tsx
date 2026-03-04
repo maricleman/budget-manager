@@ -1,6 +1,6 @@
 import type { Goal } from "./types";
 
-export default function GoalBar({ goal }: { goal: Goal }) {
+export default function GoalBar({ goal, onDelete }: { goal: Goal; onDelete?: (id: string) => void }) {
   const percent =
     goal.targetAmount <= 0
       ? 0
@@ -16,9 +16,32 @@ export default function GoalBar({ goal }: { goal: Goal }) {
       ? Math.ceil(remaining / goal.monthlyContribution)
       : null;
 
+  const projectedDate = monthsRemaining !== null ? new Date(new Date().getFullYear(), new Date().getMonth() + monthsRemaining, 1) : null;
+  const dateString = projectedDate
+    ? projectedDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : null;
+
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontWeight: "bold" }}>{goal.name}</div>
+      <div style={{ fontWeight: "bold", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {goal.name}
+        {onDelete && (
+          <button
+            onClick={() => onDelete(goal.id)}
+            style={{
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              padding: "4px 8px",
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            Delete
+          </button>
+        )}
+      </div>
 
       <div
         style={{
@@ -55,8 +78,9 @@ export default function GoalBar({ goal }: { goal: Goal }) {
 
       <div style={{ fontSize: 14, marginTop: 4 }}>
         ${remaining.toFixed(0)} remaining
-        {monthsRemaining !== null &&
-          ` • ~${monthsRemaining} months to goal`}
+        {monthsRemaining !== null && dateString
+          ? ` • ~${monthsRemaining} months / ${dateString}`
+          : ""}
       </div>
     </div>
   );

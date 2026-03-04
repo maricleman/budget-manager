@@ -4,6 +4,7 @@ export default function AddGoalForm({ onAdd }: { onAdd: () => void }) {
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
   const [monthly, setMonthly] = useState("");
+  const [currentAmount, setCurrentAmount] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -15,12 +16,14 @@ export default function AddGoalForm({ onAdd }: { onAdd: () => void }) {
         name,
         targetAmount: Number(target),
         monthlyContribution: Number(monthly),
+        currentAmount: Number(currentAmount) || 0,
       }),
     });
 
     setName("");
     setTarget("");
     setMonthly("");
+    setCurrentAmount("");
     onAdd();
   }
 
@@ -43,6 +46,12 @@ export default function AddGoalForm({ onAdd }: { onAdd: () => void }) {
         placeholder="Monthly Contribution"
         value={monthly}
         onChange={(e) => setMonthly(e.target.value)}
+      />
+      <input
+        type="number"
+        placeholder="Current Amount Saved (optional)"
+        value={currentAmount}
+        onChange={(e) => setCurrentAmount(e.target.value)}
       />
       <button type="submit">Add Goal</button>
     </form>

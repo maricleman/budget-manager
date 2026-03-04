@@ -11,7 +11,14 @@ export function GoalsPage() {
     const data = await resp.json();
     setGoals(data.goals ?? []);
   }
-
+  async function deleteGoal(id: string) {
+    await fetch("/api/delete-goal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    await loadGoals();
+  }
   useEffect(() => {
     loadGoals();
   }, []);
@@ -23,7 +30,7 @@ export function GoalsPage() {
       <AddGoalForm onAdd={loadGoals} />
 
       {goals.map((g: Goal) => (
-        <GoalBar key={g.id} goal={g} />
+        <GoalBar key={g.id} goal={g} onDelete={deleteGoal} />
       ))}
     </div>
   );
