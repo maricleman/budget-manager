@@ -1,6 +1,10 @@
+import { useState } from "react";
 import type { Goal } from "./types";
 
-export default function GoalBar({ goal, onDelete }: { goal: Goal; onDelete?: (id: string) => void }) {
+export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDelete?: (id: string) => void; onUpdate?: () => void }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editAmount, setEditAmount] = useState(String(goal.currentAmount));
+
   const percent =
     goal.targetAmount <= 0
       ? 0
@@ -20,6 +24,17 @@ export default function GoalBar({ goal, onDelete }: { goal: Goal; onDelete?: (id
   const dateString = projectedDate
     ? projectedDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : null;
+
+  async function handleSaveAmount() {
+    const newAmount = Number(editAmount);
+    await fetch("/api/update-goal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: goal.id, currentAmount: newAmount }),
+    });
+    setIsEditing(false);
+    onUpdate?.();
+  }
 
   return (
     <div style={{ marginBottom: 16 }}>
@@ -69,10 +84,37 @@ export default function GoalBar({ goal, onDelete }: { goal: Goal; onDelete?: (id
             alignItems: "center",
             justifyContent: "center",
             fontWeight: "bold",
+            cursor: "pointer",
           }}
+          onClick={() => setIsEditing(true)}
         >
-          ${goal.currentAmount.toFixed(0)} / $
-          {goal.targetAmount.toFixed(0)}
+          {!isEditing ? (
+            <>
+              ${goal.currentAmount.toFixed(0)} / $
+              {goal.targetAmount.toFixed(0)}
+            </>
+          ) : (
+            <input
+              type="number"
+              value={editAmount}
+              onChange={(e) => setEditAmount(e.target.value)}
+              onBlur={handleSaveAmount}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveAmount();
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "80px",
+                padding: "4px",
+                fontSize: "inherit",
+                fontWeight: "inherit",
+                border: "2px solid #2563eb",
+                borderRadius: "4px",
+              }}
+            />
+          )}
         </div>
       </div>
 

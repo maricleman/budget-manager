@@ -30,7 +30,7 @@ export function GoalsPage() {
       <AddGoalForm onAdd={loadGoals} />
 
       {goals.map((g: Goal) => (
-        <GoalBar key={g.id} goal={g} onDelete={deleteGoal} />
+        <GoalBar key={g.id} goal={g} onDelete={deleteGoal} onUpdate={loadGoals} />
       ))}
     </div>
   );

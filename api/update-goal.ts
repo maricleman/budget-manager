@@ -15,10 +15,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { id, monthlyContribution, addAmount } = req.body as {
+    const { id, monthlyContribution, addAmount, currentAmount } = req.body as {
       id?: string;
       monthlyContribution?: number;
       addAmount?: number;
+      currentAmount?: number;
     };
 
     if (!id) {
@@ -56,7 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       goal.monthlyContribution = Number(monthlyContribution);
     }
 
-    if (addAmount !== undefined) {
+    if (currentAmount !== undefined) {
+      goal.currentAmount = Number(currentAmount);
+    } else if (addAmount !== undefined) {
       goal.currentAmount = (goal.currentAmount ?? 0) + Number(addAmount);
     }
 
