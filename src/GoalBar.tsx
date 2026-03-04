@@ -1,6 +1,13 @@
 import { useState } from "react";
 import type { Goal } from "./types";
 
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
 export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDelete?: (id: string) => void; onUpdate?: () => void }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editAmount, setEditAmount] = useState(String(goal.currentAmount));
@@ -145,8 +152,8 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
         >
           {!isEditing ? (
             <>
-              ${goal.currentAmount.toFixed(0)} / $
-              {goal.targetAmount.toFixed(0)}
+              ${formatCurrency(goal.currentAmount)} / $
+              {formatCurrency(goal.targetAmount)}
             </>
           ) : (
             <input
@@ -175,14 +182,14 @@ export default function GoalBar({ goal, onDelete, onUpdate }: { goal: Goal; onDe
 
       <div style={{ fontSize: 14, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          ${remaining.toFixed(0)} remaining
+          ${formatCurrency(remaining)} remaining
           {monthsRemaining !== null && dateString
             ? ` • ~${monthsRemaining} months / ${dateString}`
             : ""}
         </div>
         <div style={{ cursor: "pointer", color: "#666" }} onClick={() => setIsEditingMonthly(true)}>
           {!isEditingMonthly ? (
-            <span style={{ fontSize: 12 }}>${goal.monthlyContribution.toFixed(0)}/mo</span>
+            <span style={{ fontSize: 12 }}>${formatCurrency(goal.monthlyContribution)}/mo</span>
           ) : (
             <input
               type="number"
