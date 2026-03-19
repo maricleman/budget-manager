@@ -14,6 +14,7 @@ type UpdateTransactionBody = {
   amount?: number;
   description?: string;
   person?: "david" | "hannah";
+  date?: string;
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { id, fund, amount, description, person } = req.body as UpdateTransactionBody;
+    const { id, fund, amount, description, person, date } = req.body as UpdateTransactionBody;
 
     if (!id) {
       res.status(400).json({ error: "Missing transaction id" });
@@ -59,6 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (amount !== undefined) tx.amount = Number(amount);
     if (description !== undefined) tx.description = String(description);
     if (person) tx.person = person;
+    if (date) tx.date = String(date);
 
     const newFund = tx.fund;
     const newAmount = tx.amount;

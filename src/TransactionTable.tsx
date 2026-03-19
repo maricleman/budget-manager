@@ -8,7 +8,7 @@ type Props = {
   transactions: Transaction[];
   onUpdateTransaction: (
     id: string,
-    updates: Partial<{ fund: FundName; description: string }>
+    updates: Partial<{ fund: FundName; description: string; person: "david" | "hannah"; date: string }>
   ) => Promise<void>;
   onDeleteTransaction: (id: string) => Promise<void>;
   onRestoreTransaction: (tx: Transaction) => Promise<void>;
@@ -26,6 +26,8 @@ export function TransactionTable({
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDescription, setEditingDescription] = useState("");
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
+  const [editingDate, setEditingDate] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -56,6 +58,58 @@ export function TransactionTable({
     } finally {
       setUpdatingId(null);
       setEditingId(null);
+    }
+  }
+
+  function getDateInputFormat(isoString: string): string {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function getIsoFromDateInput(dateString: string, originalIso: string): string {
+    const [year, month, day] = dateString.split("-");
+    const original = new Date(originalIso);
+    const newDate = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      original.getHours(),
+      original.getMinutes(),
+      original.getSeconds(),
+      original.getMilliseconds()
+    );
+    return newDate.toISOString();
+  }
+
+  async function saveDate() {
+    if (!editingDateId) return;
+    if (updatingId === editingDateId) return;
+
+    const tx = transactions.find((t) => t.id === editingDateId);
+    if (!tx) {
+      setEditingDateId(null);
+      return;
+    }
+
+    const newIso = getIsoFromDateInput(editingDate, tx.date);
+    if (newIso === tx.date) {
+      setEditingDateId(null);
+      return;
+    }
+
+    setUpdatingId(editingDateId);
+    try {
+      await onUpdateTransaction(editingDateId, { date: newIso } as any);
+      onToast("Transaction updated", "success");
+    } catch (err) {
+      console.error(err);
+      onToast("Unable to update date", "error");
+    } finally {
+      setUpdatingId(null);
+      setEditingDateId(null);
     }
   }
 
@@ -135,8 +189,83 @@ export function TransactionTable({
         <tbody>
           {filtered.map((t) => (
             <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ paddingRight: '5px' }}>{new Date(t.date).toLocaleDateString()}</td>
-              <td style={{ paddingRight: '5px' }}>{capitalize(t.person)}</td>
+              <td style={{ paddingRight: '5px' }}>
+                {editingDateId === t.id ? (
+                  <input
+                    type="date"
+                    value={editingDate}
+                    onChange={(e) => setEditingDate(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        await saveDate();
+                      }
+                      if (e.key === "Escape") {
+                        setEditingDateId(null);
+                      }
+                    }}
+                    onBlur={async () => {
+                      await saveDate();
+                    }}
+                    disabled={updatingId === t.id || deletingId === t.id}
+                    style={{ width: "100%" }}
+                    autoFocus
+                  />
+                ) : (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {new Date(t.date).toLocaleDateString()}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingDateId(t.id);
+                        setEditingDate(getDateInputFormat(t.date));
+                      }}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        padding: 2,
+                        color: "#4b5563",
+                      }}
+                      aria-label="Edit date"
+                      disabled={updatingId === t.id || deletingId === t.id}
+                    >
+                      ✏️
+                    </button>
+                  </span>
+                )}
+              </td>
+              <td style={{ paddingRight: '5px' }}>
+                <select
+                  value={t.person}
+                  onChange={async (e) => {
+                    const newPerson = e.target.value as "david" | "hannah";
+                    if (newPerson === t.person) return;
+
+                    setUpdatingId(t.id);
+                    try {
+                      await onUpdateTransaction(t.id, { person: newPerson });
+                      onToast("Transaction updated", "success");
+                    } catch (err) {
+                      console.error(err);
+                      onToast("Unable to update person", "error");
+                    } finally {
+                      setUpdatingId(null);
+                    }
+                  }}
+                  disabled={updatingId === t.id || deletingId === t.id}
+                >
+                  <option value="david">David</option>
+                  <option value="hannah">Hannah</option>
+                </select>
+              </td>
               <td style={{ paddingRight: "5px" }}>
                 <select
                   value={t.fund}
@@ -275,6 +404,3 @@ export function TransactionTable({
   );
 }
 
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
