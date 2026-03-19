@@ -1,10 +1,18 @@
 type Props = {
   message: string;
   type?: "success" | "error";
+  actionLabel?: string;
+  onAction?: () => void | Promise<void>;
 };
 
-export function Toast({ message, type = "success" }: Props) {
-  const background = type === "error" ? "rgba(220, 38, 38, 0.95)" : "rgba(16, 185, 129, 0.95)";
+export function Toast({
+  message,
+  type = "success",
+  actionLabel,
+  onAction,
+}: Props) {
+  const background =
+    type === "error" ? "rgba(220, 38, 38, 0.95)" : "rgba(16, 185, 129, 0.95)";
 
   return (
     <div
@@ -24,7 +32,26 @@ export function Toast({ message, type = "success" }: Props) {
         fontWeight: 500,
       }}
     >
-      {message}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span>{message}</span>
+        {actionLabel && onAction ? (
+          <button
+            onClick={onAction}
+            style={{
+              marginLeft: 12,
+              background: "rgba(255,255,255,0.2)",
+              border: "1px solid rgba(255,255,255,0.4)",
+              borderRadius: 6,
+              color: "white",
+              cursor: "pointer",
+              padding: "4px 10px",
+              fontWeight: 600,
+            }}
+          >
+            {actionLabel}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

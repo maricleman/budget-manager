@@ -13,6 +13,8 @@ import { GoalsPage } from "./GoalsPage";
 type ToastState = {
   message: string;
   type?: "success" | "error";
+  actionLabel?: string;
+  action?: () => void;
 };
 
 export default function App() {
@@ -40,18 +42,46 @@ export default function App() {
     await loadData();
   }
 
-  async function updateTransaction(id: string, fund: FundName) {
+  async function updateTransaction(
+    id: string,
+    updates: Partial<{ fund: FundName; description: string }>
+  ) {
     await fetch("/api/update-transaction", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, fund }),
+      body: JSON.stringify({ id, ...updates }),
     });
 
     await loadData();
   }
 
-  function showToast(message: string, type: "success" | "error" = "success") {
-    setToast({ message, type });
+  async function deleteTransaction(id: string) {
+    await fetch("/api/delete-transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    await loadData();
+  }
+
+  async function restoreTransaction(tx: Transaction) {
+    await fetch("/api/restore-transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(tx),
+    });
+
+    await loadData();
+  }
+
+  function showToast(
+    message: string,
+    type: "success" | "error" = "success",
+    actionLabel?: string,
+    action?: () => void | Promise<void>
+  ) {
+    setToast({ message, type, actionLabel, action });
   }
 
   // Clear toasts automatically
@@ -84,11 +114,20 @@ export default function App() {
 
       <TransactionTable
         transactions={transactions}
-        onUpdateFund={updateTransaction}
+        onUpdateTransaction={updateTransaction}
+        onDeleteTransaction={deleteTransaction}
+        onRestoreTransaction={restoreTransaction}
         onToast={showToast}
       />
 
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          actionLabel={toast.actionLabel}
+          onAction={toast.action}
+        />
+      )}
 
       <hr />
 
