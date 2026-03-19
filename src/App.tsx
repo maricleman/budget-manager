@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionTable } from "./TransactionTable";
-import type { Funds as FundsType, Transaction, NewTransaction, MonthlyBudgets } from "./types";
+import { Toast } from "./Toast";
+import type { Funds as FundsType, Transaction, NewTransaction, MonthlyBudgets, FundName } from "./types";
 import { BudgetEditor } from "./BudgetEditor";
 import { currentYearMonth } from "./utils";
 import { BudgetBars } from "./BudgetBars";
 import { GoalsPage } from "./GoalsPage";
 
 
+type ToastState = {
+  message: string;
+  type?: "success" | "error";
+};
+
 export default function App() {
   const [funds, setFunds] = useState<FundsType | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudgets>({});
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const ym = currentYearMonth();
 
@@ -32,11 +40,33 @@ export default function App() {
     await loadData();
   }
 
+  async function updateTransaction(id: string, fund: FundName) {
+    await fetch("/api/update-transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, fund }),
+    });
+
+    await loadData();
+  }
+
+  function showToast(message: string, type: "success" | "error" = "success") {
+    setToast({ message, type });
+  }
+
+  // Clear toasts automatically
+  useEffect(() => {
+    if (!toast) return;
+
+    const timeout = window.setTimeout(() => setToast(null), 2800);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  if (!funds) return <div>Loading...</div>;
+  if (!funds) return <LoadingSpinner />;
 
   const thisMonthBudgets = monthlyBudgets[ym];
 
@@ -48,12 +78,17 @@ export default function App() {
 
       <hr />
 
-
-      <TransactionForm onAdd={addTransaction} />
+      <TransactionForm onAdd={addTransaction} onToast={showToast} />
 
       <hr />
 
-      <TransactionTable transactions={transactions} />
+      <TransactionTable
+        transactions={transactions}
+        onUpdateFund={updateTransaction}
+        onToast={showToast}
+      />
+
+      {toast && <Toast message={toast.message} type={toast.type} />}
 
       <hr />
 

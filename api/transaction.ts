@@ -29,12 +29,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const json = JSON.parse(decoded);
 
     // 2. Apply transaction
-    json.transactions.unshift({
+    const tx = {
+      id: crypto.randomUUID(),
       ...body,
       date: new Date().toISOString(),
-    });
+    };
 
-    json.funds[body.fund] += body.amount;
+    json.transactions.unshift(tx);
+    json.funds[tx.fund] = Number((json.funds[tx.fund] + tx.amount).toFixed(2));
 
     // 3. Save back to GitHub
     const updatedContent = Buffer.from(

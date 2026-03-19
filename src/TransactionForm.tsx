@@ -3,35 +3,41 @@ import type { FundName, Transaction, NewTransaction } from "./types";
 import { FUNDS } from "./funds";
 
 type Props = {
-  onAdd(tx: Omit<Transaction, "id" | "date">): void;
+  onAdd(tx: Omit<Transaction, "id" | "date">): Promise<void>;
+  onToast: (message: string, type?: "success" | "error") => void;
 };
 
-export function TransactionForm({ onAdd }: Props) {
+export function TransactionForm({ onAdd, onToast }: Props) {
   const [person, setPerson] = useState<"david" | "hannah">("david");
   const [fund, setFund] = useState<FundName>("grocery");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const value = parseFloat(amount);
     if (isNaN(value)) {
-      alert("Enter a valid number");
+      onToast("Enter a valid number", "error");
       return;
     }
 
-  const tx: NewTransaction = {
-    person: person,
-    fund: fund,
-    description: description,
-    amount: Number(amount),
-  };
+    const tx: NewTransaction = {
+      person: person,
+      fund: fund,
+      description: description,
+      amount: Number(amount),
+    };
 
-    onAdd(tx);
-
-    setDescription("");
-    setAmount("");
+    try {
+      await onAdd(tx);
+      onToast("Transaction saved", "success");
+      setDescription("");
+      setAmount("");
+    } catch (err) {
+      console.error(err);
+      onToast("Unable to save transaction", "error");
+    }
   }
 
   return (
