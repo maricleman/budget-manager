@@ -44,7 +44,7 @@ export default function App() {
 
   async function updateTransaction(
     id: string,
-    updates: Partial<{ fund: FundName; description: string; person: "david" | "hannah"; date: string }>
+    updates: Partial<{ fund: FundName; description: string; person: "david" | "hannah"; date: string; amount: number }>
   ) {
     await fetch("/api/update-transaction", {
       method: "POST",

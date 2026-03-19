@@ -8,7 +8,7 @@ type Props = {
   transactions: Transaction[];
   onUpdateTransaction: (
     id: string,
-    updates: Partial<{ fund: FundName; description: string; person: "david" | "hannah"; date: string }>
+    updates: Partial<{ fund: FundName; description: string; person: "david" | "hannah"; date: string; amount: number }>
   ) => Promise<void>;
   onDeleteTransaction: (id: string) => Promise<void>;
   onRestoreTransaction: (tx: Transaction) => Promise<void>;
@@ -28,6 +28,8 @@ export function TransactionTable({
   const [editingDescription, setEditingDescription] = useState("");
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const [editingDate, setEditingDate] = useState("");
+  const [editingAmountId, setEditingAmountId] = useState<string | null>(null);
+  const [editingAmount, setEditingAmount] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -110,6 +112,41 @@ export function TransactionTable({
     } finally {
       setUpdatingId(null);
       setEditingDateId(null);
+    }
+  }
+
+  async function saveAmount() {
+    if (!editingAmountId) return;
+    if (updatingId === editingAmountId) return;
+
+    const tx = transactions.find((t) => t.id === editingAmountId);
+    if (!tx) {
+      setEditingAmountId(null);
+      return;
+    }
+
+    const newAmount = parseFloat(editingAmount);
+    if (isNaN(newAmount)) {
+      onToast("Enter a valid number", "error");
+      setEditingAmountId(null);
+      return;
+    }
+
+    if (newAmount === tx.amount) {
+      setEditingAmountId(null);
+      return;
+    }
+
+    setUpdatingId(editingAmountId);
+    try {
+      await onUpdateTransaction(editingAmountId, { amount: newAmount } as any);
+      onToast("Transaction updated", "success");
+    } catch (err) {
+      console.error(err);
+      onToast("Unable to update amount", "error");
+    } finally {
+      setUpdatingId(null);
+      setEditingAmountId(null);
     }
   }
 
@@ -364,7 +401,58 @@ export function TransactionTable({
                   fontWeight: "bold",
                 }}
               >
-                ${t.amount.toFixed(2)}
+                {editingAmountId === t.id ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingAmount}
+                    onChange={(e) => setEditingAmount(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        await saveAmount();
+                      }
+                      if (e.key === "Escape") {
+                        setEditingAmountId(null);
+                      }
+                    }}
+                    onBlur={async () => {
+                      await saveAmount();
+                    }}
+                    disabled={updatingId === t.id || deletingId === t.id}
+                    style={{ width: "100%" }}
+                    autoFocus
+                  />
+                ) : (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    ${t.amount.toFixed(2)}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingAmountId(t.id);
+                        setEditingAmount(t.amount.toString());
+                      }}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        padding: 2,
+                        color: "#4b5563",
+                      }}
+                      aria-label="Edit amount"
+                      disabled={updatingId === t.id || deletingId === t.id}
+                    >
+                      ✏️
+                    </button>
+                  </span>
+                )}
               </td>
               <td align="right">
                 <button
